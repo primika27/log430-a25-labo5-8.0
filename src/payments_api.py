@@ -5,8 +5,28 @@ Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 from flask import Flask, request, jsonify
 from controllers.payment_controller import add_payment, process_payment, get_payment
+import config
+from event_management.handler_registry import HandlerRegistry
+from handlers.stock_decreased_handler import StockDecreasedHandler
+from event_management.event_consumer import EventConsumer
 
 app = Flask(__name__)
+
+# Initialize Kafka consumer with handler registry
+try:
+    registry = HandlerRegistry()
+    registry.register(StockDecreasedHandler())
+    consumer_service = EventConsumer(
+        bootstrap_servers=config.KAFKA_HOST,
+        topic=config.KAFKA_TOPIC,
+        group_id=config.KAFKA_GROUP_ID,
+        registry=registry
+    )
+    consumer_service.start()
+    print("Kafka consumer started successfully")
+except Exception as e:
+    print(f"Warning: Could not start Kafka consumer: {e}")
+    print("Service will run without Kafka integration")
 
 @app.route("/")
 def home():

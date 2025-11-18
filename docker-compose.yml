@@ -4,12 +4,16 @@ services:
     container_name: payments_api 
     environment:
       - PYTHONUNBUFFERED=1
+      - KAFKA_HOST=kafka:9092
+      - KAFKA_TOPIC=order-events
+      - KAFKA_GROUP_ID=payment-service-group
     volumes:
       - .:/app
     ports:
       - "5009:5009"
     networks:
       - labo05-network
+      - labo08-network
     depends_on:
       - mysql_payments
 
@@ -31,6 +35,8 @@ services:
 
 networks:
   labo05-network:
+    external: true
+  labo08-network:
     external: true 
 
 volumes:
